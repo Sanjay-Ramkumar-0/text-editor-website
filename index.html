@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Editor - Welcome</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Background image */
+            background-image: url('https://i.ibb.co/202kpqVZ/IMG-20250601-122559.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            font-family: Arial, sans-serif;
+            position: relative;
+        }
+        /* Semi-transparent dark overlay */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+        .button-container {
+            display: flex;
+            gap: 20px;
+            z-index: 2;
+        }
+        .action-button {
+            padding: 15px 30px;
+            background-color: #333; /* Darker background to reduce contrast */
+            color: #ccc; /* Lighter gray text for less contrast */
+            border: 2px solid #444; /* Slightly lighter border for subtle definition */
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+            text-align: center;
+            min-width: 150px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Softer shadow */
+        }
+        .action-button:hover {
+            background-color: #555; /* Slightly lighter background on hover */
+            color: #fff; /* White text on hover, but less stark against the darker button */
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15); /* Slightly enhanced shadow on hover */
+        }
+        #fileInput {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="button-container">
+        <button class="action-button" id="newFileButton">New File</button>
+        <button class="action-button" id="openFileButton">Open File</button>
+        <input type="file" id="fileInput" accept=".json">
+    </div>
+
+    <script>
+        // New File button: Redirect to editor.html with a fresh state
+        document.getElementById('newFileButton').addEventListener('click', function() {
+            localStorage.removeItem('loadedFile');
+            window.location.href = 'editor.html';
+        });
+
+        // Open File button: Trigger file input and handle file selection
+        const fileInput = document.getElementById('fileInput');
+        document.getElementById('openFileButton').addEventListener('click', function() {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        const fileContent = JSON.parse(event.target.result);
+                        if (!fileContent.title || !Array.isArray(fileContent.boxes)) {
+                            throw new Error('Invalid file format');
+                        }
+                        localStorage.setItem('loadedFile', JSON.stringify(fileContent));
+                        window.location.href = 'editor.html';
+                    } catch (err) {
+                        alert('Error loading file: Invalid format');
+                        console.error(err);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+    </script>
+</body>
+</html>

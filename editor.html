@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dynamic Text Editor with 3-Dots Properties Menu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css?family=Pacifico&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #1A1A1A;
+            color: #fff;
+        }
+        .header-container {
+            position: relative;
+            width: 100vw;
+            min-height: 52px;
+            background-color: #333;
+            z-index: 100;
+            padding: 10px 0;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        #editableHeader {
+            color: white;
+            font-size: 24px;
+            margin: 0 0 0 16px;
+            cursor: text;
+            outline: none;
+            border: 1px dashed transparent;
+            font: bold Arial, sans-serif;
+            flex: 1;
+            min-width: 150px;
+        }
+        .new-document-button {
+            position: absolute;
+            top: 15px;
+            right: 460px;
+            background-color: #28a745;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+            z-index: 12;
+            border: 1px solid #218838;
+        }
+        .new-document-button:hover {
+            background-color: #218838;
+        }
+        .copy-icon {
+            position: absolute;
+            top: 15px;
+            right: 400px;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            fill: white;
+            z-index: 10;
+        }
+        .text-size-container {
+            position: absolute;
+            top: 13px;
+            right: 350px;
+            z-index: 11;
+        }
+        .text-size-main {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #444;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            user-select: none;
+            border: 2px solid #555;
+            transition: box-shadow 0.2s;
+        }
+        .text-size-main:hover {
+            box-shadow: 0 0 8px #fff5;
+        }
+        .text-size-subcircles {
+            position: fixed;
+            left: 0;
+            top: 53px;
+            width: 100vw;
+            display: none;
+            flex-direction: row;
+            justify-content: flex-end;
+            gap: 8px;
+            z-index: 100;
+            pointer-events: none;
+        }
+        .text-size-subcircle {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: white;
+            color: black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 13px;
+            border: 1px solid #888;
+            transition: all 0.2s;
+            pointer-events: auto;
+            user-select: none;
+        }
+        .text-size-subcircle.active {
+            background: #333;
+            color: white;
+            border: 2px solid #fff;
+            transform: scale(1.08);
+        }
+        #fontDropdown {
+            position: absolute;
+            top: 15px;
+            right: 150px;
+            background-color: #444;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            width: 180px;
+            font-size: 14px;
+            z-index: 10;
+        }
+        #fontDropdown option[style*="Pacifico"] {
+            font-family: 'Pacifico', cursive;
+        }
+        #fontDropdown option {
+            background-color: #444;
+            color: white;
+        }
+        #fontDropdown:focus {
+            outline: 2px solid #007bff;
+        }
+        .main-circle {
+            position: absolute;
+            top: 15px;
+            right: 100px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: black;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 11;
+            border: 2px solid #555;
+        }
+        .color-circle {
+            position: absolute;
+            z-index: 30;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: none;
+            cursor: pointer;
+            border: 2px solid #fff;
+        }
+        .color-circle.rainbow {
+            background: conic-gradient(red, orange, yellow, green, blue, indigo, violet, red);
+            top: 60px;
+            right: 80px;
+        }
+        .color-circle.yellow { background-color: #fdd835; top: 60px; right: 120px; }
+        .color-circle.violet { background-color: #9c4dff; top: 60px; right: 160px; }
+        .color-circle.blue { background-color: #64b5f6; top: 60px; right: 200px; }
+        .color-circle.red { background-color: #e57373; top: 60px; right: 240px; }
+        .color-circle.black { background-color: black; top: 60px; right: 280px; }
+        .save-button {
+            position: absolute;
+            top: 15px;
+            right: 10px;
+            background-color: #007bff;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+            z-index: 12;
+            border: 1px solid #0056b3;
+        }
+        .save-button:hover {
+            background-color: #0056b3;
+        }
+        #counters-row {
+            display: flex;
+            gap: 24px;
+            padding-left: 20px;
+            margin-top: 20px;
+            align-items: center;
+        }
+        #wordCountDisplay, #boxCountDisplay {
+            position: static;
+            font-size: 16px;
+            color: #fff;
+            opacity: 0.9;
+            font-family: Arial, sans-serif;
+            min-width: 80px;
+            text-align: left;
+            background: none;
+        }
+        .editable-box-wrapper {
+            position: relative;
+            margin: 10px 20px;
+        }
+        .editable-box {
+            border: 2px solid #4A6B8A;
+            padding: 10px 8px 10px 32px;
+            min-height: 25px;
+            min-width: 25%;
+            width: fit-content;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border-radius: 10px;
+            background-color: white;
+            color: black;
+            cursor: text;
+            position: relative;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.2;
+            z-index: 1;
+            box-sizing: border-box;
+        }
+        .three-dots-menu {
+            position: absolute;
+            top: 10px;
+            left: 8px;
+            cursor: pointer;
+            font-size: 20px;
+            color: #222;
+            user-select: none;
+            z-index: 3;
+            background: transparent;
+            border: none;
+            outline: none;
+            padding: 0 2px;
+            transition: color 0.2s;
+            pointer-events: auto;
+        }
+        .three-dots-menu:hover {
+            color: #007bff;
+        }
+        .properties-popup {
+            position: absolute;
+            top: 32px;
+            left: 0;
+            background: #222;
+            color: #fff;
+            padding: 12px 16px 14px 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 18px #000a;
+            font-size: 14px;
+            z-index: 10;
+            min-width: 200px;
+            max-width: 260px;
+            display: none;
+            pointer-events: auto;
+            user-select: none;
+        }
+        .properties-popup b {
+            font-weight: bold;
+        }
+        .popup-btn {
+            display: block;
+            margin: 12px auto 0 auto;
+            padding: 6px 0;
+            width: 90%;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .popup-btn:hover {
+            background: #0056b3;
+        }
+        #contentContainer .editable-box-wrapper:first-child {
+            margin-top: 20px !important;
+        }
+        .file-preview {
+            background-color: #fff;
+            color: #000;
+            padding: 10px;
+            margin: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-block;
+        }
+        #floating-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: #007BFF;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 15;
+        }
+        #floating-button::before {
+            content: '+';
+            font-size: 36px;
+            color: #fff;
+        }
+        #sidebars {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 15;
+        }
+        .sidebar {
+            width: 150px;
+            padding: 10px;
+            background-color: #fff;
+            color: #000;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        .select-delete {
+            background-color: rgba(255,0,0,0.5) !important;
+            border-color: red;
+        }
+        #bin-button {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: #FF4D4D;
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: none;
+            z-index: 15;
+        }
+        #rearrangeModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #444;
+            padding: 20px;
+            border-radius: 15px;
+            z-index: 1000;
+            color: white;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        #rearrangeModal h3 {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        #rearrangeModal input {
+            width: 80%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #888;
+            border-radius: 5px;
+            background-color: #555;
+            color: white;
+            font-size: 14px;
+        }
+        #rearrangeModal button {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #applyRearrange {
+            background-color: #28a745;
+            color: white;
+        }
+        #applyRearrange:hover {
+            background-color: #218838;
+        }
+        #cancelRearrange {
+            background-color: #dc3545;
+            color: white;
+        }
+        #cancelRearrange:hover {
+            background-color: #c82333;
+        }
+        #searchReplaceModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #444;
+            padding: 20px;
+            border-radius: 15px;
+            z-index: 1000;
+            color: white;
+            width: 300px;
+            text-align: center;
+        }
+        #searchReplaceModal input {
+            width: 90%;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: none;
+        }
+        #searchReplaceModal button {
+            padding: 8px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .highlighted-search {
+            background: yellow;
+            color: black;
+        }
+        .rgb-picker-panel {
+            display: none;
+            position: fixed;
+            top: 120px;
+            right: 30px;
+            width: 270px;
+            background: #333;
+            border-radius: 14px;
+            box-shadow: 0 6px 32px #000a;
+            padding: 24px 20px 20px 20px;
+            z-index: 1001;
+            color: #fff;
+        }
+        .rgb-picker-panel h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            text-align: center;
+        }
+        .rgb-preview {
+            width: 70px;
+            height: 70px;
+            border-radius: 10px;
+            border: 2px solid #fff;
+            margin: 0 auto 18px auto;
+        }
+        .rgb-slider-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .rgb-slider-row label {
+            width: 30px;
+            font-size: 14px;
+        }
+        .rgb-slider-row input[type=range] {
+            flex: 1;
+            margin: 0 10px;
+        }
+        .rgb-slider-row .rgb-value {
+            width: 32px;
+            text-align: right;
+            font-size: 14px;
+        }
+        .rgb-picker-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 16px;
+        }
+        .rgb-picker-actions button {
+            padding: 8px 18px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+        .rgb-apply-btn {
+            background: #28a745;
+            color: #fff;
+        }
+        .rgb-cancel-btn {
+            background: #dc3545;
+            color: #fff;
+        }
+        @media (max-width: 800px) {
+            .new-document-button { right: 310px; top: 50px; }
+            .copy-icon { right: 250px; }
+            .text-size-container { right: 200px; }
+            #fontDropdown { right: 60px; width: 120px; }
+            .main-circle { right: 20px; }
+            .save-button { right: 10px; top: 50px; }
+            .color-circle.rainbow { right: 0px; }
+            .color-circle.yellow { right: 40px; }
+            .color-circle.violet { right: 80px; }
+            .color-circle.blue { right: 120px; }
+            .color-circle.red { right: 160px; }
+            .color-circle.black { right: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-container">
+        <h1 id="editableHeader" contenteditable="true" aria-label="Document title">unnamed</h1>
+        <button class="new-document-button" title="New Document" aria-label="Start a new document">New Document</button>
+        <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" title="Copy All Text">
+            <rect x="9" y="9" width="13" height="13" rx="2" fill="white" stroke="#333" stroke-width="2"/>
+            <rect x="3" y="3" width="13" height="13" rx="2" fill="white" stroke="#333" stroke-width="2"/>
+        </svg>
+        <div class="text-size-container">
+            <div class="text-size-main" id="textSizeMain" title="Text Size">16</div>
+            <div class="text-size-subcircles" id="textSizeSubcircles"></div>
+        </div>
+        <select id="fontDropdown" title="Word Style" aria-label="Font family selector">
+            <option value="Arial, sans-serif" style="font-family: Arial, sans-serif;">Arial</option>
+            <option value="'Times New Roman', Times, serif" style="font-family: 'Times New Roman', Times, serif;">Times New Roman</option>
+            <option value="Verdana, Geneva, sans-serif" style="font-family: Verdana, Geneva, sans-serif;">Verdana</option>
+            <option value="'Courier New', Courier, monospace" style="font-family: 'Courier New', Courier, monospace;">Courier New</option>
+            <option value="'Pacifico', cursive" style="font-family: 'Pacifico', cursive;">Pacifico</option>
+        </select>
+        <div class="main-circle" id="mainCircle" title="Color" role="button" aria-label="Open color picker" tabindex="0"></div>
+        <div class="color-circle rainbow" id="rainbowCircle" title="Custom Color"></div>
+        <div class="color-circle yellow" id="yellowCircle"></div>
+        <div class="color-circle violet" id="violetCircle"></div>
+        <div class="color-circle blue" id="blueCircle"></div>
+        <div class="color-circle red" id="redCircle"></div>
+        <div class="color-circle black" id="blackCircle"></div>
+        <button class="save-button" title="Save" aria-label="Save document">Save</button>
+    </div>
+
+    <div id="counters-row">
+        <div id="wordCountDisplay">Words: 0</div>
+        <div id="boxCountDisplay">Boxes: 0</div>
+    </div>
+
+    <div class="rgb-picker-panel" id="rgbPickerPanel">
+        <h3>Pick a Color</h3>
+        <div class="rgb-preview" id="rgbPreview"></div>
+        <div class="rgb-slider-row">
+            <label for="rgbR">R</label>
+            <input type="range" id="rgbR" min="0" max="255" value="0">
+            <span class="rgb-value" id="rgbRVal">0</span>
+        </div>
+        <div class="rgb-slider-row">
+            <label for="rgbG">G</label>
+            <input type="range" id="rgbG" min="0" max="255" value="0">
+            <span class="rgb-value" id="rgbGVal">0</span>
+        </div>
+        <div class="rgb-slider-row">
+            <label for="rgbB">B</label>
+            <input type="range" id="rgbB" min="0" max="255" value="0">
+            <span class="rgb-value" id="rgbBVal">0</span>
+        </div>
+        <div class="rgb-picker-actions">
+            <button class="rgb-apply-btn" id="rgbApplyBtn">Apply</button>
+            <button class="rgb-cancel-btn" id="rgbCancelBtn">Cancel</button>
+        </div>
+    </div>
+
+    <div id="searchReplaceModal">
+        <h3>Search and Replace</h3>
+        <input type="text" id="searchInput" placeholder="Search for..." aria-label="Search term"/>
+        <input type="text" id="replaceInput" placeholder="Replace with..." aria-label="Replacement text"/>
+        <div>
+            <button class="btn-primary" id="findNextButton" disabled>Find Next</button>
+            <button class="btn-primary" id="replaceButton" disabled>Replace</button>
+            <button class="btn-primary" id="replaceAllButton" disabled>Replace All</button>
+            <button class="btn-danger" id="cancelSearchReplace">Cancel</button>
+        </div>
+    </div>
+
+    <div id="contentContainer"></div>
+
+    <div id="floating-button" title="Menu" aria-label="Open menu"></div>
+    <div id="sidebars">
+        <div class="sidebar" id="new-line" title="New Line (Ctrl+I)">New Line</div>
+        <div class="sidebar" id="delete-items" title="Delete (Ctrl+D)">Delete</div>
+        <div class="sidebar" id="rearrange-items" title="Rearrange (Ctrl+R)">Rearrange</div>
+        <div class="sidebar" id="searchReplaceModel" title="Replace (Ctrl+E)">Replace</div>
+    </div>
+
+    <button id="bin-button" aria-label="Delete selected items">Delete</button>
+
+    <div id="rearrangeModal">
+        <h3>Rearrange Items</h3>
+        <input type="number" id="firstIndex" placeholder="First Item Index" min="1" aria-label="First item index">
+        <input type="number" id="secondIndex" placeholder="Second Item Index" min="1" aria-label="Second item index">
+        <button id="applyRearrange">Apply</button>
+        <button id="cancelRearrange">Cancel</button>
+    </div>
+
+    <script>
+        // --- Prompt on Reload (Moved to Top to Ensure Registration) ---
+        window.addEventListener('beforeunload', function(e) {
+            console.log('beforeunload event triggered at:', new Date().toISOString());
+            const confirmationMessage = 'Changes you made may not be saved.';
+            e.returnValue = confirmationMessage;
+            return confirmationMessage;
+        });
+
+        // --- Global Variables ---
+        let selectedColor = 'black';
+        let selectedFontFamily = 'Arial, sans-serif';
+        let currentFontSize = 16;
+        let lastFocusedEditable = null;
+        let history = [];
+        let historyIndex = -1;
+
+        // --- Utility Functions ---
+        function getWordCount(text) {
+            return (text.replace(/\u00A0/g, ' ').trim().match(/\S+/g) || []).length;
+        }
+
+        function rgbToHex(r, g, b) {
+            return "#" + [r, g, b].map(x => {
+                const hex = x.toString(16);
+                return hex.length === 1 ? "0" + hex : hex;
+            }).join('');
+        }
+
+        function moveCaretToEnd(el) {
+            el.focus();
+            if (typeof window.getSelection != "undefined" && typeof document.createRange != "undefined") {
+                const range = document.createRange();
+                range.selectNodeContents(el);
+                range.collapse(false);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+        }
+
+        function getFontFamilyName(fontFamily, fallback) {
+            if (!fontFamily || fontFamily === "inherit" || fontFamily === "initial" || fontFamily === "sans-serif") {
+                fontFamily = fallback;
+            }
+            const cleanFont = fontFamily.replace(/['"]/g, '').split(',')[0].trim();
+            const fontMap = {
+                'Arial': 'Arial',
+                'Times New Roman': 'Times New Roman',
+                'Verdana': 'Verdana',
+                'Courier New': 'Courier New',
+                'Pacifico': 'Pacifico'
+            };
+            return fontMap[cleanFont] || cleanFont;
+        }
+
+        // --- State Management ---
+        function saveState() {
+            const state = {
+                title: document.getElementById('editableHeader').innerText.trim(),
+                boxes: Array.from(document.querySelectorAll('.editable-box')).map(box => ({
+                    content: box.innerText.replace(/\r?\n/g, '\n'),
+                    fontSize: parseInt(window.getComputedStyle(box).fontSize),
+                    color: window.getComputedStyle(box).color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/)?.slice(1).map(Number) || [0, 0, 0],
+                    fontFamily: window.getComputedStyle(box).fontFamily
+                }))
+            };
+            history = history.slice(0, historyIndex + 1);
+            history.push(state);
+            historyIndex++;
+            localStorage.setItem('editorState', JSON.stringify(state));
+        }
+
+        function restoreState() {
+            if (historyIndex < 0 || historyIndex >= history.length) return;
+            const state = history[historyIndex];
+            document.getElementById('editableHeader').innerText = state.title;
+            contentContainer.innerHTML = '';
+            state.boxes.forEach(box => {
+                const wrapper = createEditableBox();
+                const editableBox = wrapper.querySelector('.editable-box');
+                editableBox.innerText = box.content;
+                editableBox.style.fontSize = `${box.fontSize}px`;
+                editableBox.style.color = `rgb(${box.color.join(',')})`;
+                editableBox.style.fontFamily = box.fontFamily;
+                contentContainer.appendChild(wrapper);
+            });
+            updateCounts();
+        }
+
+        function undo() {
+            if (historyIndex <= 0) return;
+            historyIndex--;
+            restoreState();
+        }
+
+        function redo() {
+            if (historyIndex >= history.length - 1) return;
+            historyIndex++;
+            restoreState();
+        }
+
+        // --- Text Box Creation ---
+        function createEditableBox() {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'editable-box-wrapper';
+            const dots = document.createElement('div');
+            dots.className = 'three-dots-menu';
+            dots.setAttribute('contenteditable', 'false');
+            dots.setAttribute('aria-label', 'Open properties menu');
+            dots.setAttribute('tabindex', '0');
+            dots.innerHTML = '⋮';
+            const newEditableBox = document.createElement('div');
+            newEditableBox.className = 'editable-box';
+            newEditableBox.contentEditable = 'true';
+            newEditableBox.style.color = selectedColor;
+            newEditableBox.style.fontFamily = selectedFontFamily;
+            newEditableBox.style.fontSize = currentFontSize + 'px';
+            const popup = document.createElement('div');
+            popup.className = 'properties-popup';
+            popup.setAttribute('contenteditable', 'false');
+            popup.innerHTML = `
+                <div><b>Box #:</b> <span class="prop-number"></span></div>
+                <div><b>Text Size:</b> <span class="prop-size"></span></div>
+                <div><b>Text Color:</b> <span class="prop-color"></span></div>
+                <div><b>Word Style:</b> <span class="prop-font"></span></div>
+                <div><b>Word Count:</b> <span class="prop-words"></span></div>
+                <button class="popup-btn" data-action="copy">Copy Text</button>
+                <button class="popup-btn" data-action="undo" aria-label="Undo last action" tabindex="0">Undo (Ctrl+Z)</button>
+                <button class="popup-btn" data-action="redo" aria-label="Redo last action" tabindex="0">Redo (Ctrl+Y)</button>
+            `;
+            wrapper.appendChild(dots);
+            wrapper.appendChild(newEditableBox);
+            wrapper.appendChild(popup);
+            return wrapper;
+        }
+
+        // --- Event Delegation for 3-Dots Menu ---
+        document.getElementById('contentContainer').addEventListener('click', function(e) {
+            if (e.target.classList.contains('three-dots-menu')) {
+                e.stopPropagation();
+                document.querySelectorAll('.properties-popup').forEach(p => p.style.display = 'none');
+                const wrapper = e.target.closest('.editable-box-wrapper');
+                const box = wrapper.querySelector('.editable-box');
+                const popup = wrapper.querySelector('.properties-popup');
+                const allWrappers = Array.from(document.querySelectorAll('.editable-box-wrapper'));
+                const boxNumber = allWrappers.indexOf(wrapper) + 1;
+                const style = window.getComputedStyle(box);
+                const fontFamily = style.fontFamily;
+                popup.querySelector('.prop-number').textContent = boxNumber;
+                popup.querySelector('.prop-size').textContent = style.fontSize;
+                popup.querySelector('.prop-color').textContent = style.color;
+                popup.querySelector('.prop-font').textContent = getFontFamilyName(fontFamily, selectedFontFamily);
+                popup.querySelector('.prop-words').textContent = getWordCount(box.innerText || box.textContent);
+                popup.style.display = 'block';
+            }
+            if (e.target.classList.contains('popup-btn')) {
+                e.stopPropagation();
+                const wrapper = e.target.closest('.editable-box-wrapper');
+                const box = wrapper.querySelector('.editable-box');
+                const action = e.target.getAttribute('data-action');
+                if (action === 'copy') {
+                    const text = box.innerText.trim();
+                    if (text) {
+                        navigator.clipboard.writeText(text);
+                        e.target.textContent = "Copied!";
+                        setTimeout(() => e.target.textContent = "Copy Text", 1200);
+                    }
+                } else if (action === 'undo') {
+                    undo();
+                    e.target.textContent = "Undone!";
+                    setTimeout(() => e.target.textContent = "Undo (Ctrl+Z)", 1200);
+                } else if (action === 'redo') {
+                    redo();
+                    e.target.textContent = "Redone!";
+                    setTimeout(() => e.target.textContent = "Redo (Ctrl+Y)", 1200);
+                }
+            }
+        });
+
+        document.getElementById('contentContainer').addEventListener('input', function(e) {
+            if (e.target.classList.contains('editable-box')) {
+                const wrapper = e.target.closest('.editable-box-wrapper');
+                const popup = wrapper.querySelector('.properties-popup');
+                if (popup.style.display === 'block') {
+                    popup.querySelector('.prop-words').textContent = getWordCount(e.target.innerText || e.target.textContent);
+                }
+                updateWordCount();
+                saveState();
+            }
+        });
+
+        // --- Delete Mode Logic ---
+        let deleteMode = false;
+        const selectedForDeletion = new Set();
+
+        document.getElementById('contentContainer').addEventListener('click', function(e) {
+            if (!deleteMode) return;
+            const item = e.target.closest('.editable-box-wrapper, .file-preview');
+            if (item && contentContainer.contains(item)) {
+                e.stopPropagation();
+                item.classList.toggle('select-delete');
+                if (selectedForDeletion.has(item)) {
+                    selectedForDeletion.delete(item);
+                } else {
+                    selectedForDeletion.add(item);
+                }
+            }
+        });
+
+        // --- Sidebar and Floating Button ---
+        const floatingButton = document.getElementById('floating-button');
+        const sidebars = document.getElementById('sidebars');
+        const binButton = document.getElementById('bin-button');
+        
+        floatingButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            sidebars.style.display = sidebars.style.display === 'flex' ? 'none' : 'flex';
+            if (!deleteMode) binButton.style.display = 'none';
+        });
+        sidebars.addEventListener('click', (e) => e.stopPropagation());
+
+        // --- Color Picker Logic ---
+        const mainCircle = document.getElementById('mainCircle');
+        const colorCircles = {
+            rainbow: document.getElementById('rainbowCircle'),
+            yellow: document.getElementById('yellowCircle'),
+            violet: document.getElementById('violetCircle'),
+            blue: document.getElementById('blueCircle'),
+            red: document.getElementById('redCircle'),
+            black: document.getElementById('blackCircle')
+        };
+        const colorMap = {
+            yellow: '#fdd835',
+            violet: '#9c4dff',
+            blue: '#64b5f6',
+            red: '#e57373',
+            black: 'black'
+        };
+
+        function showColorCircles() {
+            Object.values(colorCircles).forEach(circle => circle.style.display = 'block');
+            textSizeSubcircles.style.display = 'none';
+        }
+        function hideColorCircles() {
+            Object.values(colorCircles).forEach(circle => circle.style.display = 'none');
+        }
+        function updateColor(color) {
+            selectedColor = color;
+            mainCircle.style.background = '';
+            mainCircle.style.backgroundColor = color;
+            hideColorCircles();
+            if (lastFocusedEditable) {
+                lastFocusedEditable.style.background = '';
+                lastFocusedEditable.style.color = color;
+                lastFocusedEditable.style.webkitTextFillColor = "";
+                saveState();
+            }
+        }
+        mainCircle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showColorCircles();
+        });
+        mainCircle.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                showColorCircles();
+            }
+        });
+        Object.entries(colorCircles).forEach(([color, circle]) => {
+            if (color !== 'rainbow') {
+                circle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    updateColor(colorMap[color]);
+                });
+            }
+        });
+
+        // --- RGB Picker Panel ---
+        const rgbPickerPanel = document.getElementById('rgbPickerPanel');
+        const rgbPreview = document.getElementById('rgbPreview');
+        const rgbR = document.getElementById('rgbR');
+        const rgbG = document.getElementById('rgbG');
+        const rgbB = document.getElementById('rgbB');
+        const rgbRVal = document.getElementById('rgbRVal');
+        const rgbGVal = document.getElementById('rgbGVal');
+        const rgbBVal = document.getElementById('rgbBVal');
+        const rgbApplyBtn = document.getElementById('rgbApplyBtn');
+        const rgbCancelBtn = document.getElementById('rgbCancelBtn');
+
+        function updateRgbPreview() {
+            const r = parseInt(rgbR.value);
+            const g = parseInt(rgbG.value);
+            const b = parseInt(rgbB.value);
+            rgbPreview.style.background = `rgb(${r},${g},${b})`;
+            rgbRVal.textContent = r;
+            rgbGVal.textContent = g;
+            rgbBVal.textContent = b;
+        }
+        colorCircles.rainbow.addEventListener('click', function(e) {
+            e.stopPropagation();
+            hideColorCircles();
+            textSizeSubcircles.style.display = 'none';
+            rgbPickerPanel.style.display = 'block';
+            let r = 0, g = 0, b = 0;
+            if (lastFocusedEditable) {
+                let col = window.getComputedStyle(lastFocusedEditable).color;
+                let m = col.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+                if (m) {
+                    r = parseInt(m[1]);
+                    g = parseInt(m[2]);
+                    b = parseInt(m[3]);
+                }
+            }
+            rgbR.value = r; rgbG.value = g; rgbB.value = b;
+            updateRgbPreview();
+        });
+        [rgbR, rgbG, rgbB].forEach(slider => {
+            slider.addEventListener('input', updateRgbPreview);
+        });
+        rgbApplyBtn.addEventListener('click', function() {
+            const r = parseInt(rgbR.value);
+            const g = parseInt(rgbG.value);
+            const b = parseInt(rgbB.value);
+            const hex = rgbToHex(r, g, b);
+            updateColor(hex);
+            rgbPickerPanel.style.display = 'none';
+        });
+        rgbCancelBtn.addEventListener('click', function() {
+            rgbPickerPanel.style.display = 'none';
+        });
+
+        // --- Text Size Selector ---
+        const textSizeMain = document.getElementById('textSizeMain');
+        const textSizeSubcircles = document.getElementById('textSizeSubcircles');
+        const headerContainer = document.querySelector('.header-container');
+        const textSizes = [8, 10, 12, 14, 16, 18, 20, 22, 24, 26];
+
+        function getHeaderBgColor() {
+            return window.getComputedStyle(headerContainer).backgroundColor;
+        }
+
+        function applyHeaderBgToSizeCircles() {
+            const bgColor = getHeaderBgColor();
+            textSizeMain.style.backgroundColor = bgColor;
+            document.querySelectorAll('.text-size-subcircle.active').forEach(el => {
+                el.style.backgroundColor = bgColor;
+            });
+        }
+
+        function createSizeSubcircles() {
+            textSizeSubcircles.innerHTML = '';
+            textSizes.forEach((size, i) => {
+                const sub = document.createElement('div');
+                sub.className = 'text-size-subcircle' + (size === currentFontSize ? ' active' : '');
+                sub.textContent = size;
+                sub.style.backgroundColor = size === currentFontSize ? getHeaderBgColor() : 'white';
+                sub.style.color = size === currentFontSize ? 'white' : 'black';
+                sub.addEventListener('click', e => {
+                    e.stopPropagation();
+                    currentFontSize = size;
+                    textSizeMain.textContent = size;
+                    document.querySelectorAll('.text-size-subcircle').forEach((el, idx) => {
+                        if (textSizes[idx] === size) {
+                            el.classList.add('active');
+                            el.style.backgroundColor = getHeaderBgColor();
+                            el.style.color = 'white';
+                        } else {
+                            el.classList.remove('active');
+                            el.style.backgroundColor = 'white';
+                            el.style.color = 'black';
+                        }
+                    });
+                    textSizeSubcircles.style.display = 'none';
+                    if (lastFocusedEditable) {
+                        lastFocusedEditable.style.fontSize = size + 'px';
+                        saveState();
+                    }
+                });
+                textSizeSubcircles.appendChild(sub);
+            });
+            applyHeaderBgToSizeCircles();
+        }
+
+        textSizeMain.addEventListener('click', e => {
+            e.stopPropagation();
+            createSizeSubcircles();
+            textSizeSubcircles.style.display = 'flex';
+            hideColorCircles();
+            rgbPickerPanel.style.display = 'none';
+        });
+        textSizeSubcircles.addEventListener('click', e => e.stopPropagation());
+        window.addEventListener('resize', applyHeaderBgToSizeCircles);
+
+        // --- Font Dropdown ---
+        const fontDropdown = document.getElementById('fontDropdown');
+        document.addEventListener('focusin', function(e) {
+            if (e.target.classList.contains('editable-box')) {
+                lastFocusedEditable = e.target;
+                fontDropdown.value = lastFocusedEditable.style.fontFamily || selectedFontFamily;
+                const fs = parseInt(window.getComputedStyle(lastFocusedEditable).fontSize) || currentFontSize;
+                textSizeMain.textContent = fs;
+                currentFontSize = fs;
+            }
+        });
+        fontDropdown.addEventListener('change', function() {
+            selectedFontFamily = this.value;
+            if (lastFocusedEditable) {
+                lastFocusedEditable.style.fontFamily = selectedFontFamily;
+                saveState();
+            }
+        });
+
+        // --- Content Logic ---
+        const contentContainer = document.getElementById('contentContainer');
+        const newLineButton = document.getElementById('new-line');
+        newLineButton.addEventListener('click', () => {
+            const newWrapper = createEditableBox();
+            contentContainer.appendChild(newWrapper);
+            const box = newWrapper.querySelector('.editable-box');
+            setTimeout(() => moveCaretToEnd(box), 0);
+            sidebars.style.display = 'none';
+            saveState();
+            updateCounts();
+        });
+
+        // --- New Document Button ---
+        const newDocumentButton = document.querySelector('.new-document-button');
+        newDocumentButton.addEventListener('click', () => {
+            if (confirm('Are you sure you want to start a new document? All unsaved changes will be lost.')) {
+                localStorage.removeItem('editorState');
+                history = [];
+                historyIndex = -1;
+                contentContainer.innerHTML = '';
+                document.getElementById('editableHeader').innerText = 'unnamed';
+                newLineButton.click();
+                saveState();
+                updateCounts();
+            }
+        });
+
+        // --- Delete Mode ---
+        const deleteItemsButton = document.getElementById('delete-items');
+        deleteItemsButton.addEventListener('click', () => {
+            deleteMode = true;
+            binButton.style.display = 'block';
+            sidebars.style.display = 'none';
+        });
+
+        binButton.addEventListener('click', () => {
+            selectedForDeletion.forEach(item => item.remove());
+            selectedForDeletion.clear();
+            binButton.style.display = 'none';
+            deleteMode = false;
+            saveState();
+            updateCounts();
+        });
+
+        // --- Rearrange Modal ---
+        const rearrangeItemsButton = document.getElementById('rearrange-items');
+        const rearrangeModal = document.getElementById('rearrangeModal');
+        const applyRearrangeButton = document.getElementById('applyRearrange');
+        const cancelRearrangeButton = document.getElementById('cancelRearrange');
+        rearrangeItemsButton.addEventListener('click', () => {
+            rearrangeModal.style.display = 'block';
+            sidebars.style.display = 'none';
+        });
+        cancelRearrangeButton.addEventListener('click', () => {
+            rearrangeModal.style.display = 'none';
+        });
+        applyRearrangeButton.addEventListener('click', () => {
+            const firstIndex = parseInt(document.getElementById('firstIndex').value) - 1;
+            const secondIndex = parseInt(document.getElementById('secondIndex').value) - 1;
+            const items = contentContainer.children;
+            if (isNaN(firstIndex) || isNaN(secondIndex)) {
+                alert('Please enter valid numbers for both indices.');
+                return;
+            }
+            if (firstIndex < 0 || secondIndex < 0 || firstIndex >= items.length || secondIndex >= items.length) {
+                alert(`Indices must be between 1 and ${items.length}.`);
+                return;
+            }
+            const firstItem = items[firstIndex];
+            const secondItem = items[secondIndex];
+            const nextSibling = firstItem.nextSibling;
+            contentContainer.insertBefore(firstItem, secondItem);
+            if (nextSibling === secondItem) {
+                contentContainer.insertBefore(secondItem, firstItem);
+            } else {
+                contentContainer.insertBefore(secondItem, nextSibling);
+            }
+            rearrangeModal.style.display = 'none';
+            document.getElementById('firstIndex').value = '';
+            document.getElementById('secondIndex').value = '';
+            saveState();
+            updateCounts();
+        });
+
+        // --- Copy All Text ---
+        const copyIcon = document.querySelector('.copy-icon');
+        copyIcon.addEventListener('click', () => {
+            const allText = Array.from(document.querySelectorAll('.editable-box'))
+                .map(box => box.textContent.trim())
+                .filter(text => text !== '')
+                .join(' ');
+            if (allText) {
+                navigator.clipboard.writeText(allText).then(() => {
+                    alert('All text copied to clipboard!');
+                }).catch(err => {
+                    console.error('Failed to copy text: ', err);
+                });
+            } else {
+                alert('No text found in editable boxes.');
+            }
+        });
+
+        // --- Search and Replace ---
+        let searchMatches = [];
+        let currentMatchIndex = -1;
+        const searchReplaceModal = document.getElementById('searchReplaceModal');
+        const searchInput = document.getElementById('searchInput');
+        const replaceInput = document.getElementById('replaceInput');
+        const findNextButton = document.getElementById('findNextButton');
+        const replaceButton = document.getElementById('replaceButton');
+        const replaceAllButton = document.getElementById('replaceAllButton');
+        const cancelSearchReplaceButton = document.getElementById('cancelSearchReplace');
+        const searchReplaceModelSidebar = document.getElementById('searchReplaceModel');
+
+        function collectMatches(searchTerm) {
+            searchMatches = [];
+            currentMatchIndex = -1;
+            const editableBoxes = document.querySelectorAll('.editable-box');
+            editableBoxes.forEach((box, boxIndex) => {
+                box.normalize();
+                let text = box.textContent;
+                let startIndex = 0;
+                while (true) {
+                    let idx = text.indexOf(searchTerm, startIndex);
+                    if (idx === -1) break;
+                    searchMatches.push({ box, boxIndex, start: idx, end: idx + searchTerm.length });
+                    startIndex = idx + searchTerm.length;
+                }
+            });
+        }
+
+        function removeHighlights() {
+            document.querySelectorAll('.highlighted-search').forEach(span => {
+                const parent = span.parentNode;
+                parent.replaceChild(document.createTextNode(span.textContent), span);
+                parent.normalize();
+            });
+        }
+
+        function highlightCurrentMatch() {
+            removeHighlights();
+            if (currentMatchIndex >= 0 && currentMatchIndex < searchMatches.length) {
+                const { box, start, end } = searchMatches[currentMatchIndex];
+                const range = document.createRange();
+                const textNode = Array.from(box.childNodes).find(node => node.nodeType === Node.TEXT_NODE && node.textContent.includes(searchInput.value.trim()));
+                if (textNode) {
+                    range.setStart(textNode, start);
+                    range.setEnd(textNode, end);
+                    const span = document.createElement('span');
+                    span.className = 'highlighted-search';
+                    range.surroundContents(span);
+                    box.normalize();
+                }
+            }
+        }
+
+        searchReplaceModelSidebar.addEventListener('click', () => {
+            searchReplaceModal.style.display = 'block';
+            searchInput.focus();
+            searchMatches = [];
+            currentMatchIndex = -1;
+            removeHighlights();
+            sidebars.style.display = 'none';
+        });
+
+        searchInput.addEventListener('input', () => {
+            const term = searchInput.value.trim();
+            findNextButton.disabled = !term;
+            replaceButton.disabled = !term;
+            replaceAllButton.disabled = !term;
+            removeHighlights();
+            if (term) {
+                collectMatches(term);
+                if (searchMatches.length > 0) {
+                    currentMatchIndex = 0;
+                    highlightCurrentMatch();
+                }
+            }
+        });
+
+        findNextButton.addEventListener('click', () => {
+            if (searchMatches.length === 0) {
+                alert('No matches found.');
+                return;
+            }
+            currentMatchIndex = (currentMatchIndex + 1) % searchMatches.length;
+            highlightCurrentMatch();
+        });
+
+        replaceButton.addEventListener('click', () => {
+            const searchTerm = searchInput.value.trim();
+            const replaceTerm = replaceInput.value;
+            if (!searchTerm || currentMatchIndex === -1) {
+                alert('No match selected.');
+                return;
+            }
+            const { box, start, end } = searchMatches[currentMatchIndex];
+            let text = box.textContent;
+            box.textContent = text.substring(0, start) + replaceTerm + text.substring(end);
+            collectMatches(searchTerm);
+            if (searchMatches.length > 0) {
+                currentMatchIndex = currentMatchIndex % searchMatches.length;
+                highlightCurrentMatch();
+            } else {
+                currentMatchIndex = -1;
+                removeHighlights();
+                alert('No more matches.');
+            }
+            saveState();
+            updateCounts();
+        });
+
+        replaceAllButton.addEventListener('click', () => {
+            const searchTerm = searchInput.value.trim();
+            const replaceTerm = replaceInput.value;
+            if (!searchTerm) {
+                alert('Please enter a search term.');
+                return;
+            }
+            let replacedAny = false;
+            const editableBoxes = document.querySelectorAll('.editable-box');
+            editableBoxes.forEach(box => {
+                if (box.textContent.includes(searchTerm)) {
+                    box.textContent = box.textContent.split(searchTerm).join(replaceTerm);
+                    replacedAny = true;
+                }
+            });
+            removeHighlights();
+            saveState();
+            updateCounts();
+            alert(replacedAny ? 'All occurrences replaced.' : 'No match found.');
+        });
+
+        cancelSearchReplaceButton.addEventListener('click', () => {
+            searchReplaceModal.style.display = 'none';
+            searchInput.value = '';
+            replaceInput.value = '';
+            searchMatches = [];
+            currentMatchIndex = -1;
+            removeHighlights();
+        });
+
+        // --- Save ---
+        document.getElementById('editableHeader').addEventListener('input', saveState);
+        document.querySelector('.save-button').addEventListener('click', function() {
+            const state = history[historyIndex] || {
+                title: document.getElementById('editableHeader').innerText.trim(),
+                boxes: Array.from(document.querySelectorAll('.editable-box')).map(box => ({
+                    content: box.innerText.replace(/\r?\n/g, '\n'),
+                    fontSize: parseInt(window.getComputedStyle(box).fontSize),
+                    color: window.getComputedStyle(box).color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/)?.slice(1).map(Number) || [0, 0, 0],
+                    fontFamily: window.getComputedStyle(box).fontFamily
+                }))
+            };
+            const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = state.title.replace(/[^a-zA-Z0-9_\-]/g, '_') + '.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            this.textContent = 'Saved!';
+            setTimeout(() => this.textContent = 'Save', 1200);
+        });
+
+        // --- Hide Popups ---
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.text-size-container')) {
+                textSizeSubcircles.style.display = 'none';
+            }
+            if (!e.target.closest('#mainCircle') && !e.target.classList.contains('color-circle') && !e.target.closest('.rgb-picker-panel')) {
+                hideColorCircles();
+                rgbPickerPanel.style.display = 'none';
+            }
+            if (!e.target.closest('#floating-button') && !e.target.closest('#sidebars')) {
+                sidebars.style.display = 'none';
+                if (!deleteMode) binButton.style.display = 'none';
+            }
+            if (!e.target.classList.contains('three-dots-menu') && !e.target.closest('.properties-popup')) {
+                document.querySelectorAll('.properties-popup').forEach(p => p.style.display = 'none');
+            }
+        });
+
+        // --- Keyboard Shortcuts ---
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT' && e.target.type !== 'button' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+            if (e.ctrlKey && e.key.toLowerCase() === 'i') {
+                e.preventDefault();
+                newLineButton.click();
+            }
+            if (e.ctrlKey && e.key.toLowerCase() === 'd') {
+                e.preventDefault();
+                deleteItemsButton.click();
+            }
+            if (e.ctrlKey && e.key.toLowerCase() === 'r') {
+                e.preventDefault();
+                rearrangeItemsButton.click();
+            }
+            if (e.ctrlKey && e.key.toLowerCase() === 'e') {
+                e.preventDefault();
+                searchReplaceModelSidebar.click();
+            }
+            if (e.ctrlKey && e.key.toLowerCase() === 'z') {
+                e.preventDefault();
+                undo();
+            }
+            if (e.ctrlKey && e.key.toLowerCase() === 'y') {
+                e.preventDefault();
+                redo();
+            }
+        });
+
+        // --- Counts ---
+        function updateWordCount() {
+            let totalWords = 0;
+            document.querySelectorAll('.editable-box').forEach(box => {
+                totalWords += getWordCount(box.innerText || box.textContent || "");
+            });
+            document.getElementById('wordCountDisplay').textContent = `Words: ${totalWords}`;
+        }
+
+        function updateBoxCount() {
+            const boxCount = document.querySelectorAll('.editable-box').length;
+            document.getElementById('boxCountDisplay').textContent = `Boxes: ${boxCount}`;
+        }
+
+        function updateCounts() {
+            updateWordCount();
+            updateBoxCount();
+        }
+
+        const observer = new MutationObserver(updateCounts);
+        observer.observe(contentContainer, { childList: true, subtree: true, characterData: true });
+
+        // --- Initialize ---
+        window.onload = function() {
+            // Always clear the editorState on reload to start fresh
+            localStorage.removeItem('editorState');
+
+            // Check for a loaded file from index.html
+            const loadedFile = localStorage.getItem('loadedFile');
+            if (loadedFile) {
+                try {
+                    const state = JSON.parse(loadedFile);
+                    if (state.title && Array.isArray(state.boxes)) {
+                        history = [state];
+                        historyIndex = 0;
+                        restoreState();
+                        localStorage.removeItem('loadedFile');
+                    } else {
+                        throw new Error('Invalid loaded file');
+                    }
+                } catch (err) {
+                    console.error('Failed to load file:', err);
+                    // Start fresh with one empty box
+                    contentContainer.innerHTML = '';
+                    document.getElementById('editableHeader').innerText = 'unnamed';
+                    newLineButton.click();
+                    saveState();
+                }
+            } else {
+                // Start fresh with one empty box
+                contentContainer.innerHTML = '';
+                document.getElementById('editableHeader').innerText = 'unnamed';
+                newLineButton.click();
+                saveState();
+            }
+            updateCounts();
+        };
+    </script>
+</body>
+</html>
