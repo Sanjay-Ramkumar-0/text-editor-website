@@ -3,103 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Text Editor - Welcome</title>
+    <title>CostSaver - Welcome</title>
     <style>
-        body {
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            /* Background image */
-            background-image: url('https://i.ibb.co/202kpqVZ/IMG-20250601-122559.jpg');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            font-family: Arial, sans-serif;
-            position: relative;
         }
-        /* Semi-transparent dark overlay */
-        body::before {
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0a0a0a; /* Deep black base, Fincher-inspired shadows */
+            color: #e0e0e0; /* High-contrast off-white text for readability */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .header {
+            padding: 40px 20px 20px;
+            text-align: center;
+            background: linear-gradient(to bottom, #1a1a1a, #0a0a0a); /* Subtle gradient for depth */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6); /* Fincher-esque shadowy edges */
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 800;
+            color: #b5c99a; /* Muted green-yellow tint, evoking Fincher's desaturated palettes (e.g., Se7en/Fight Club vibes) */
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8); /* Dramatic shadow for mood */
+        }
+
+        .header .subtitle {
+            font-size: 1.1em;
+            color: #8a8a8a; /* Desaturated gray for subtle intrigue */
+            margin-top: 12px;
+            opacity: 0.9;
+        }
+
+        .cards {
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            gap: 24px;
+            flex-grow: 1;
+        }
+
+        .card {
+            background-color: #1f1f1f; /* Dark gray card base, high contrast against black */
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.7), inset 0 1px 2px rgba(255, 255, 255, 0.05); /* Fincher depth: outer shadow + subtle inner glow */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 140px;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background: linear-gradient(135deg, rgba(59, 82, 63, 0.15), rgba(0, 0, 0, 0)); /* Subtle green overlay for Fincher's moody tint */
+            opacity: 0.6;
+            transition: opacity 0.4s ease;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card:hover {
+            transform: translateY(-6px) scale(1.02); /* Slight lift and zoom for interactivity, like a film frame shift */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.9), inset 0 1px 2px rgba(255, 255, 255, 0.1);
+        }
+
+        .card-title {
+            font-size: 1.6em;
+            font-weight: 700;
+            color: #d4d4d4; /* Near-white for punchy titles */
             z-index: 1;
         }
-        .button-container {
-            display: flex;
-            gap: 20px;
-            z-index: 2;
+
+        .card-subtitle {
+            font-size: 0.95em;
+            color: #a0a0a0; /* Muted for secondary text */
+            margin-top: 10px;
+            z-index: 1;
         }
-        .action-button {
-            padding: 15px 30px;
-            background-color: #333; /* Darker background to reduce contrast */
-            color: #ccc; /* Lighter gray text for less contrast */
-            border: 2px solid #444; /* Slightly lighter border for subtle definition */
-            border-radius: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+
+        .footer {
+            font-size: 0.85em;
+            color: #6a6a6a;
             text-align: center;
-            min-width: 150px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Softer shadow */
+            padding: 20px;
+            background: #0a0a0a;
+            border-top: 1px solid #2a2a2a; /* Subtle divider */
         }
-        .action-button:hover {
-            background-color: #555; /* Slightly lighter background on hover */
-            color: #fff; /* White text on hover, but less stark against the darker button */
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15); /* Slightly enhanced shadow on hover */
+
+        /* Mobile-first responsive design */
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .card {
+                min-height: 120px;
+            }
+
+            .card-title {
+                font-size: 1.4em;
+            }
+
+            .card-subtitle {
+                font-size: 0.9em;
+            }
         }
-        #fileInput {
-            display: none;
+
+        /* Creative animation: Fade-in on load, Fincher slow reveal */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+
+        .header, .card {
+            animation: fadeIn 1.2s ease-out forwards;
+        }
+
+        .card:nth-child(1) { animation-delay: 0.2s; }
+        .card:nth-child(2) { animation-delay: 0.4s; }
+        .card:nth-child(3) { animation-delay: 0.6s; }
     </style>
 </head>
 <body>
-    <div class="button-container">
-        <button class="action-button" id="newFileButton">New File</button>
-        <button class="action-button" id="openFileButton">Open File</button>
-        <input type="file" id="fileInput" accept=".json">
+    <div class="header">
+        <h1>CostSaver</h1>
+        <div class="subtitle">Uncover hidden deals in the shadows – Transport, Food, Shopping compared for the ultimate edge</div>
     </div>
-
-    <script>
-        // New File button: Redirect to editor.html with a fresh state
-        document.getElementById('newFileButton').addEventListener('click', function() {
-            localStorage.removeItem('loadedFile');
-            window.location.href = 'editor.html';
-        });
-
-        // Open File button: Trigger file input and handle file selection
-        const fileInput = document.getElementById('fileInput');
-        document.getElementById('openFileButton').addEventListener('click', function() {
-            fileInput.click();
-        });
-
-        fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    try {
-                        const fileContent = JSON.parse(event.target.result);
-                        if (!fileContent.title || !Array.isArray(fileContent.boxes)) {
-                            throw new Error('Invalid file format');
-                        }
-                        localStorage.setItem('loadedFile', JSON.stringify(fileContent));
-                        window.location.href = 'editor.html';
-                    } catch (err) {
-                        alert('Error loading file: Invalid format');
-                        console.error(err);
-                    }
-                };
-                reader.readAsText(file);
-            }
-        });
-    </script>
+    <div class="cards">
+        <a href="transport.html" class="card">
+            <div class="card-title">Transport</div>
+            <div class="card-subtitle">Pit Uber, Ola, Rapido against each other – ride the cheapest wave</div>
+        </a>
+        <a href="food.html" class="card">
+            <div class="card-title">Food</div>
+            <div class="card-subtitle">Swiggy vs Zomato vs Direct – devour savings, not your wallet</div>
+        </a>
+        <a href="shopping.html" class="card">
+            <div class="card-title">Shopping</div>
+            <div class="card-subtitle">Amazon, Flipkart, Direct sellers – hunt the lowest price in the dark</div>
+        </a>
+    </div>
+    <div class="footer">Inspired by David Fincher's Palette • CostSaver 2025 • Shadows Hide the Best Deals</div>
 </body>
 </html>
